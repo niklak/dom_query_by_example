@@ -20,6 +20,7 @@
 * `:link`
 * `:has-text`
 * `:contains`
+* `:only-text`
 
 ### Notes
 `:has-text` – checks whether one of children nodes has specific text.
