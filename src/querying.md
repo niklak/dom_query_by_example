@@ -242,7 +242,9 @@ let doc = Document::from(html);
 
 // Search for list items (`li`) within a `tr` element that contains an `a` element
 // with the title "Programming paradigm"
-let paradigm_selection = doc.select(r#"table tr:has(a[title="Programming paradigm"]) td.infobox-data ul > li"#);
+let paradigm_selection = doc.select(
+    r#"table tr:has(a[title="Programming paradigm"]) td.infobox-data ul > li"#
+    );
 
 println!("Rust programming paradigms:");
 for item in paradigm_selection.iter() {
@@ -252,7 +254,9 @@ println!("{:-<50}", "");
 
 // Select items based on `th` containing text "Influenced by" and
 // the following `tr` containing `td` with list items.
-let influenced_by_selection = doc.select(r#"table tr:has-text("Influenced by") + tr td ul > li > a"#);
+let influenced_by_selection = doc.select(
+    r#"table tr:has-text("Influenced by") + tr td ul > li > a"#
+    );
 
 println!("Rust influenced by:");
 for item in influenced_by_selection.iter() {
@@ -262,19 +266,33 @@ println!("{:-<50}", "");
 
 // Extract all links within a paragraph containing "foreign function interface" text.
 // Since a part of the text is in a separate tag, we use the `:contains` pseudo-class.
-let links_selection = doc.select(r#"p:contains("Rust has a foreign function interface") a[href^="/"]"#);
+let links_selection = doc.select(
+    r#"p:contains("Rust has a foreign function interface") a[href^="/"]"#
+    );
 
 println!("Links in the FFI block:");
 for item in links_selection.iter() {
     println!(" {}", item.attr("href").unwrap());
 }
 println!("{:-<50}", "");
+
+// :only-text selects an element that contains only a single text node, 
+// with no child elements.
+// It can be combined with other pseudo-classes to achieve more specific selections.
+// For example, to select a <div> inside an <a> 
+//that has no siblings and no child elements other than text.
+println!("Single <div> inside an <a> with text only:");
+for el in doc.select("a div:only-text:only-child").iter() {
+    println!("{}", el.text().trim());
+}
+
 ```
 #### Key Points:
 
 - `:has(selector)`: Finds elements that contain a matching element anywhere within.
 - `:has-text("text")`: Matches elements based on their immediate text content, ignoring any nested elements. This makes it ideal for selecting nodes where the direct text is crucial for differentiation.
 - `:contains("text")`: Selects elements containing the specified text within them, useful when searching in a block of text.
+- `:only-text`: Selects elements that contain only a single text node, with no other child nodes.
 
 These pseudo-classes allow for precise and expressive searches within the DOM, enabling the selection of content-rich elements based on structural or attribute-driven conditions.
-For a full list of supported pseudo-classes, refer to the  [Supported CSS Pseudo-Classes List](./List-of-supported-CSS-pseudo‐classes.md).
+For a full list of supported pseudo-classes, refer to the  [Supported CSS Pseudo-Classes List](./supported-css-pseudo-classes.md).
