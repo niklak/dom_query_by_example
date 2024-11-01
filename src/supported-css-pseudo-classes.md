@@ -10,7 +10,7 @@
 * `:where`
 * `:last-of-type`
 * `:not`
-* `:only`
+* `:only-child`
 * `:only-of-type`
 * `:nth-child`
 * `:nth-last-child`
@@ -25,3 +25,5 @@
 `:has-text` – checks whether one of children nodes has specific text.
 
 `:contains` – checks whether the combined text of all child nodes contains specific text.
+
+`:only-text` - checks whether the element contains only a single text node, with no other child nodes.
