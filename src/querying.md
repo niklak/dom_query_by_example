@@ -69,23 +69,28 @@ let doc: Document = r#"<!DOCTYPE html>
 // selecting a first match
 let single_selection = doc.select_single(".list");
 assert_eq!(single_selection.length(), 1);
-assert_eq!(single_selection.inner_html().to_string().trim(), "<li>1</li><li>2</li><li>3</li>");
+assert_eq!(single_selection.inner_html().to_string().trim(), 
+    "<li>1</li><li>2</li><li>3</li>");
 
 // selecting all matches
 let selection = doc.select(".list");
 assert_eq!(selection.length(), 2);
-// but when you call property methods usually you will get the result of the first match
-assert_eq!(selection.inner_html().to_string().trim(), "<li>1</li><li>2</li><li>3</li>");
+// but when you call property methods usually
+// you will get the result of the first match
+assert_eq!(selection.inner_html().to_string().trim(), 
+    "<li>1</li><li>2</li><li>3</li>");
 
 // This creates a Selection from the first node in the selection
 let first_selection = doc.select(".list").first();
 assert_eq!(first_selection.length(), 1);
-assert_eq!(first_selection.inner_html().to_string().trim(), "<li>1</li><li>2</li><li>3</li>");
+assert_eq!(first_selection.inner_html().to_string().trim(), 
+    "<li>1</li><li>2</li><li>3</li>");
 
 // This approach also creates a new Selection from the next node, each iteration
 let next_selection = doc.select(".list").iter().next().unwrap();
 assert_eq!(next_selection.length(), 1);
-assert_eq!(next_selection.inner_html().to_string().trim(), "<li>1</li><li>2</li><li>3</li>");
+assert_eq!(next_selection.inner_html().to_string().trim(), 
+    "<li>1</li><li>2</li><li>3</li>");
 
 // currently, to get data from all matches you need to iterate over them:
 let all_matched: String = selection
@@ -161,8 +166,10 @@ For repeated queries, `dom_query` allows using precompiled matchers. This approa
 ```rust
 use dom_query::{Document, Matcher};
 
-let html1 = r#"<!DOCTYPE html><html><head><title>Test Page 1</title></head><body></body></html>"#;
-let html2 = r#"<!DOCTYPE html><html><head><title>Test Page 2</title></head><body></body></html>"#;
+let html1 = r#"<!DOCTYPE html>
+    <html><head><title>Test Page 1</title></head><body></body></html>"#;
+let html2 = r#"<!DOCTYPE html>
+    <html><head><title>Test Page 2</title></head><body></body></html>"#;
 let doc1 = Document::from(html1);
 let doc2 = Document::from(html2);
 
