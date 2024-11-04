@@ -42,7 +42,7 @@ assert!(no_sel.is_none());
 The `Selection::is` method checks whether elements in the current selection match a given selector, without performing a deep search within the elements.
 `dom_query` supports pseudo-classes that goes from `selectors` crate and a few others from itself.
 
-**See also**: [List of supported CSS pseudo-classes](./List-of-supported-CSS-pseudo‐classes.md)
+**See also**: [List of supported CSS pseudo-classes](./supported-css-pseudo-classes.md)
 
 
 ### Selecting a Single Match and Multiple Matches
