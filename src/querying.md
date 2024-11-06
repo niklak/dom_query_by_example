@@ -239,7 +239,7 @@ assert!(limited_ancestor_sel.is("#parent"));
 assert!(!limited_ancestor_sel.is("#great-ancestor")); // This node is excluded due to the limit
 ```
 
-Note that `ancestors()` can be called on both `NodeRef` and `Selection`, allowing you to choose the most convenient way to retrieve ancestor nodes.
+Note that `ancestors()` can be called on both `NodeRef` and `Selection`. `NodeRef::ancestors()` returns a vector with ancestor nodes, while `Selection` returns a new `Selection` containing ancestor nodes.
 
 ### Selecting with pseudo-classes (:has, :has-text, :contains)
 
