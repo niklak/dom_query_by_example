@@ -220,6 +220,8 @@ let child_node = child_sel.nodes().first().unwrap();
 let ancestors = child_node.ancestors(None);
 let ancestor_sel = Selection::from(ancestors);
 
+// or just: let ancestor_sel = child_sel.ancestors(None);
+
 // In this case, all ancestor nodes up to the root <html> are included
 assert!(ancestor_sel.is("html")); // Root <html> is included
 assert!(ancestor_sel.is("#parent")); // Direct parent is also included
@@ -236,6 +238,8 @@ assert!(limited_ancestor_sel.is("#grand-parent"));
 assert!(limited_ancestor_sel.is("#parent"));
 assert!(!limited_ancestor_sel.is("#great-ancestor")); // This node is excluded due to the limit
 ```
+
+Note that `ancestors()` can be called on both `NodeRef` and `Selection`, allowing you to choose the most convenient way to retrieve ancestor nodes.
 
 ### Selecting with pseudo-classes (:has, :has-text, :contains)
 
@@ -303,3 +307,41 @@ for el in doc.select("a div:only-text:only-child").iter() {
 
 These pseudo-classes allow for precise and expressive searches within the DOM, enabling the selection of content-rich elements based on structural or attribute-driven conditions.
 For a full list of supported pseudo-classes, refer to the  [Supported CSS Pseudo-Classes List](./supported-css-pseudo-classes.md).
+
+
+### Filtering Selection
+
+You can filter a selection based on another selection. This can be useful when you need to narrow down a selection to only include elements that are also part of another selection.
+
+```rust
+use dom_query::Document;
+
+let doc: Document = r#"<!DOCTYPE html>
+<html lang="en">
+    <head>TEST</head>
+    <body>
+        <div class="content">
+            <p>Content text has a <a href="/0">link</a></p>
+        </div>
+        <footer>
+            <a href="/1">Footer Link</a>
+        </footer>
+    </body>
+</html>
+"#.into();
+
+// Selecting all links in the document
+let sel_with_links = doc.select("a[href]");
+
+assert_eq!(sel_with_links.length(), 2);
+
+// Selecting every element inside
+let content_sel = doc.select("div.content *");
+
+// Filter selection by content selection, so now we get only links (actually only 1 link) that are inside
+let filtered_sel = sel_with_links.filter_selection(&content_sel);
+
+assert_eq!(filtered_sel.length(), 1);
+```
+
+You can also use `Selection::filter` , `Selection::try_filter`, which returns an `Option<Selection>`, and `Selection::filter_matcher` to filter a selection using a pre-compiled `Matcher`.
