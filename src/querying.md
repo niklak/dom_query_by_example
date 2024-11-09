@@ -345,3 +345,39 @@ assert_eq!(filtered_sel.length(), 1);
 ```
 
 You can also use `Selection::filter` , `Selection::try_filter`, which returns an `Option<Selection>`, and `Selection::filter_matcher` to filter a selection using a pre-compiled `Matcher`.
+
+### Adding Selection
+
+You can combine multiple selections. This can be useful when you want to work with a combined set of elements.
+
+```rust
+use dom_query::Document;
+
+let doc: Document = r#"<!DOCTYPE html>
+<html>
+    <head>Test</head>
+    <body>
+       <div id="great-ancestor">
+           <div id="grand-parent">
+               <div id="parent">
+                   <div id="first-child">Child</div>
+                   <div id="second-child">Child</div>
+               </div>
+           </div>
+       </div>
+    </body>
+</html>"#.into();
+
+let first_sel = doc.select("#first-child");
+assert_eq!(first_sel.length(), 1);
+let second_sel = doc.select("#second-child");
+assert_eq!(second_sel.length(), 1);
+let children_sel = first_sel.add_selection(&second_sel);
+assert_eq!(children_sel.length(), 2);
+```
+
+Additionally, there are other methods available:
+
+- `Selection::add` to add a single element.
+- `Selection::try_add` which returns an `Option<Selection>`.
+- `Selection::add_matcher` to add elements using a pre-compiled `Matcher`.

@@ -48,6 +48,14 @@ assert_eq!(replace_selection.text().trim(), "Replace me");
 
 // But the document will reflect the changes
 assert_eq!(doc.select(".replaced").text(),"Replaced".into());
+
+
+// Prepend more elements to the selection
+content_selection.prepend_html(r#"<p class="third">3</p>"#);
+content_selection.prepend_html(r#"<p class="first">1</p><p class="second">2</p>"#);
+
+// Now the added paragraphs are in front of the 'div'
+assert!(doc.select(r#".content > .first + .second + .third + div:has-text("1,2,3")"#).exists());
 ```
 
 ### Explanation:
@@ -59,6 +67,8 @@ assert_eq!(doc.select(".replaced").text(),"Replaced".into());
     - The `remove` method deletes the elements matching the selector from the document.
 - **Replace with HTML**:
     - The `replace_with_html` method replaces the selected elements with new HTML. Note that the selection itself remains unchanged, but the document reflects the new content.
+- **Prepend HTML**
+    - The `prepend_html` method is used to add a new HTML node at the beginning of the existing selection.
 
 
 ## Renaming Elements Without Changing the Contents
@@ -129,6 +139,11 @@ main_node.append_html(r#"<p id="third">Wonderful</p>"#);
 assert_eq!(doc.select("#main #third").text().as_ref(), "Wonderful");
 assert!(doc.select("#first").exists());
 
+// There is also a `prepend_child` and `prepend_html` methods which allows
+// to insert content to the begging of the node.
+main_node.prepend_html(r#"<p id="minus-one">-1</p><p id="zero">0</p>"#);
+assert!(doc.select("#main > #minus-one + #zero + #first + #second + #third").exists());
+
 // Replacing existing element content with new HTML using `set_html`
 main_node.set_html(r#"<p id="the-only">Wonderful</p>"#);
 assert_eq!(doc.select("#main #the-only").text().as_ref(), "Wonderful");
@@ -144,19 +159,23 @@ assert_eq!(doc.select("span + span").text().as_ref(), "Tweedledee");
 ```
 
 #### Explanation:
-- Creating a Simple Element:
+- **Creating a Simple Element**:
     - Use `doc.tree.new_element()` to create a new element.
     - Set attributes using `node.set_attr()`.
     - Set text content using `node.set_text()`.
     - Append the new element to the selected node using `node.append_child()`.
-- Appending HTML:
+- **Appending HTML**:
     - Use `append_html` to add a more complex HTML node to the existing selection.
     - This method is more convenient for adding multiple elements to the selected node.
 
-- Setting New HTML Content:
+- **Prepending HTML**:
+    - Use `prepend_html` to add new HTML nodes at the beginning of the existing selection.
+    - Use `prepend_child` to prepend a new or an existing element node to the selected node.
+
+- **Setting New HTML Content**:
     - Use `set_html` to replace the existing content of the selected node with new HTML.
     - It changes the inner HTML contents of the node.
-- Replacing Node Contents Completely:
+- **Replacing Node Contents Completely**:
     - Use `replace_with_html` to replace the entire content of the node, including the node itself.
 
-Additionally, methods like `replace_with_html`, `set_html`, and `append_html` can specify more than one element in the provided string.
+Additionally, methods like `replace_with_html`, `set_html`, `append_html` and `prepend_html` can specify more than one element in the provided string.
