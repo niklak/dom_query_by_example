@@ -54,8 +54,23 @@ assert_eq!(doc.select(".replaced").text(),"Replaced".into());
 content_selection.prepend_html(r#"<p class="third">3</p>"#);
 content_selection.prepend_html(r#"<p class="first">1</p><p class="second">2</p>"#);
 
-// Now the added paragraphs are in front of the 'div'
-assert!(doc.select(r#".content > .first + .second + .third + div:has-text("1,2,3")"#).exists());
+// Also you can insert html before selection:
+let first = content_selection.select(".first");
+first.before_html(r#"<p class="none">None</p>"#);
+// or after:
+let third = content_selection.select(".third");
+third.after_html(r#"<p class="fourth">4</p>"#);
+
+// now the added paragraphs standing in front of `div`
+assert!(doc.select(r#".content > .none + .first + .second + .third + .fourth + div:has-text("1,2,3")"#).exists());
+
+// to set a text to the selection you can use `set_html` but `set_text` is preferable:
+let p_sel = content_selection.select("p");
+let total_p = p_sel.length();
+p_sel.set_text("test content");
+
+assert_eq!(doc.select(r#"p:has-text("test content")"#).length(), total_p);
+
 ```
 
 ### Explanation:
@@ -69,6 +84,10 @@ assert!(doc.select(r#".content > .first + .second + .third + div:has-text("1,2,3
     - The `replace_with_html` method replaces the selected elements with new HTML. Note that the selection itself remains unchanged, but the document reflects the new content.
 - **Prepend HTML**
     - The `prepend_html` method is used to add a new HTML node at the beginning of the existing selection.
+
+- **Insert HTML Before/After**
+    - The `before_html` method inserts HTML before each element in the selection.
+    - The `after_html` method inserts HTML after each element in the selection.
 
 
 ## Renaming Elements Without Changing the Contents
