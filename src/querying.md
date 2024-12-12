@@ -381,3 +381,65 @@ Additionally, there are other methods available:
 - `Selection::add` to add a single element.
 - `Selection::try_add` which returns an `Option<Selection>`.
 - `Selection::add_matcher` to add elements using a pre-compiled `Matcher`.
+
+
+### Node Descendants
+
+The `descendants` method can be used to retrieve all descendant nodes of a given element in the document tree. This method includes both element nodes and text nodes, including whitespace nodes between elements.
+
+```rust
+use dom_query::Document;
+
+let doc: Document = r#"<!DOCTYPE html>
+<html>
+    <head><title>Test</title></head>
+    <body>
+       <div id="great-ancestor">
+           <div id="grand-parent">
+               <div id="parent">
+                   <div id="first-child">Child</div>
+                   <div id="second-child">Child</div>
+               </div>
+           </div>
+           <div id="grand-parent-sibling"></div>
+        </div>
+    </body>
+</html>"#.into();
+
+let ancestor_sel = doc.select("#great-ancestor");
+assert!(ancestor_sel.exists());
+
+let ancestor_node = ancestor_sel.nodes().first().unwrap();
+
+let expected_id_names = vec![
+    "grand-parent-sibling",
+    "second-child",
+    "first-child",
+    "parent",
+    "grand-parent",
+];
+
+// if you want to reuse descendants then use `descendants` which returns a vector of nodes
+let descendants = ancestor_node.descendants();
+
+// Descendants include not only element nodes, but also text nodes.
+// Whitespace characters between element nodes are also considered as text nodes.
+// Therefore, the number of descendants is usually not equal to the number of element descendants.
+
+let descendants_id_names = descendants
+    .iter()
+    .rev()
+    .filter(|n| n.is_element())
+    .map(|n| n.attr_or("id", "").to_string())
+    .collect::<Vec<_>>();
+
+assert_eq!(descendants_id_names, expected_id_names);
+```
+
+#### Key Points:
+- The `descendants` method returns all descendant nodes, including element nodes and text nodes.
+- Whitespace characters between elements are considered as text nodes.
+- The number of descendants is usually greater than the number of element descendants due to the inclusion of text nodes.
+- You can filter the descendants to retrieve only element nodes using an iterator and the `is_element` method.
+
+This method is useful for traversing the DOM tree and accessing nodes that are nested within a specific element.
