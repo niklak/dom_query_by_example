@@ -198,3 +198,50 @@ assert_eq!(doc.select("span + span").text().as_ref(), "Tweedledee");
     - Use `replace_with_html` to replace the entire content of the node, including the node itself.
 
 Additionally, methods like `replace_with_html`, `set_html`, `append_html` and `prepend_html` can specify more than one element in the provided string.
+
+## Text Node Normalization
+Node normalization is essential for merging adjacent text nodes into a single node and removing empty text nodes. This helps keep the document structure compact and organized.
+
+```rust
+use dom_query::Document;
+
+let contents = r#"<!DOCTYPE html>
+<html>
+    <head><title>Test</title></head>
+    <body>
+        <div id="parent">
+            <div id="child">Child</div>
+        </div>
+    </body>
+</html>"#;
+let doc = Document::from(contents);
+
+// Select the node with id "child"
+let child_sel = doc.select_single("#child");
+let child = child_sel.nodes().first().unwrap();
+
+// Check that the node initially has only one child
+assert_eq!(child.children_it(false).count(), 1);
+
+// Create and append new text nodes
+let text_1 = doc.tree.new_text(" and a");
+let text_2 = doc.tree.new_text(" ");
+let text_3 = doc.tree.new_text("tail");
+child.append_child(&text_1);
+child.append_child(&text_2);
+child.append_child(&text_3);
+
+// Verify the text and child count before normalization
+assert_eq!(child.text(), "Child and a tail".into());
+assert_eq!(child.children_it(false).count(), 4);
+
+// Normalize the node
+child.normalize();
+
+// Verify the text and child count after normalization
+assert_eq!(child.children_it(false).count(), 1);
+assert_eq!(child.text(), "Child and a tail".into());
+
+```
+The `normalize` method follows the [Node.normalize()](https://developer.mozilla.org/en-US/docs/Web/API/Node/normalize) specification.
+This method is also available through the `Document` struct as `Document::normalize()`, which applies normalization to all text nodes within the document tree.
