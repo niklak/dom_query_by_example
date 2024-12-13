@@ -175,14 +175,34 @@ main_node.replace_with_html(
 );
 assert!(!doc.select("#main").exists());
 assert_eq!(doc.select("span + span").text().as_ref(), "Tweedledee");
+
+// Inserting HTML content before a certain node using `node.before_html`
+let span_sel = doc.select("body > span");
+let span_node = span_sel.nodes().first().unwrap();
+span_node.before_html(r#"<div id="main">Main Content</div>"#);
+assert!(doc.select(r#"body > #main + span:has-text("Tweedledum")"#).exists());
+
+// Inserting HTML content after a certain node using `node.after_html`
+let span_node = span_sel.nodes().last().unwrap();
+span_node.after_html(r#"<div id="extra">Extra Content</div>"#);
+assert!(doc.select(r#"body > span:has-text("Tweedledee") + #extra"#).exists());
+
+// To insert nodes before or after a certain element, 
+// use the `node.insert_before` and `node.insert_after` methods.
+// Both methods share the same behavior as `node.append_child`.
+
 ```
 
 #### Explanation:
 - **Creating a Simple Element**:
-    - Use `doc.tree.new_element()` to create a new element.
+    - Use `doc.tree.new_element()` to create a new orphan element.
     - Set attributes using `node.set_attr()`.
     - Set text content using `node.set_text()`.
-    - Append the new element to the selected node using `node.append_child()`.
+    - Use `node.append_child()` to append a new child element node to the selected node.
+    - Use `node.prepend_child()` to prepend a new child element node to the selected node.
+    - Use `node.insert_before()` to insert a new sibling element node before the selected node.
+    - Use `node.insert_after()` to insert a new sibling element node after the selected node.
+
 - **Appending HTML**:
     - Use `append_html` to add a more complex HTML node to the existing selection.
     - This method is more convenient for adding multiple elements to the selected node.
@@ -194,10 +214,15 @@ assert_eq!(doc.select("span + span").text().as_ref(), "Tweedledee");
 - **Setting New HTML Content**:
     - Use `set_html` to replace the existing content of the selected node with new HTML.
     - It changes the inner HTML contents of the node.
+    
 - **Replacing Node Contents Completely**:
     - Use `replace_with_html` to replace the entire content of the node, including the node itself.
 
-Additionally, methods like `replace_with_html`, `set_html`, `append_html` and `prepend_html` can specify more than one element in the provided string.
+- **Inserting HTML Before/After**:
+    - Use `before_html` to insert HTML before each element in the selection.
+    - Use `after_html` to insert HTML after each element in the selection.
+
+Additionally, methods like `replace_with_html`, `set_html`, `append_html`, `prepend_html`, `before_html` and `after_html` can specify more than one element in the provided string.
 
 ## Text Node Normalization
 Node normalization is essential for merging adjacent text nodes into a single node and removing empty text nodes. This helps keep the document structure compact and organized.
