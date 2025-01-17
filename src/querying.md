@@ -477,3 +477,69 @@ let base_uri = node.base_uri().unwrap();
 assert_eq!(base_uri.as_ref(), "https://www.example.com/");
 ```
 
+## Verifying Selection and Node Matches
+
+The `is` useful if you need to combine several checks into one expression. It can check for having a certain position in the DOM tree,
+having a certain attribute, or a certain element name all at once. This method is available for `Selection` and `NodeRef`.
+
+```rust
+let contents: &str = r#"<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test</title>
+    </head>
+    <body>
+        <div id="main" dir="ltr"></div>
+        <div id="extra"></div>
+    </body>
+</html>"#;
+let doc = Document::from(contents);
+
+let main_sel = doc.select_single("#main");
+let extra_sel = doc.select_single("#extra");
+
+// For `Selection`, it verifies that at least one of the nodes in the selection
+// matches the selector.
+assert!(main_sel.is("div#main"));
+assert!(!extra_sel.is("div#main"));
+
+// For `NodeRef`, the `is` method verifies that the node matches the selector.
+let main_node = main_sel.nodes().first().unwrap();
+let extra_node = extra_sel.nodes().first().unwrap();
+
+assert!(main_node.is("html > body > div#main[dir=ltr]"));
+assert!(extra_node.is("html > body > div#main + div"));
+```
+
+## Fast Finding Child Elements
+
+There is an **experimental** `find` method which is accessible only from `NodeRef`. It may be useful to perform a quick search by element names across descendants.
+You need to provide a `path` argument, which is a sequence of element names. The method returns a vector of `NodeRef` that correspond to the matching elements. The elements are returned in the order they appear in the document tree. Since it is **experimental**, the API may change in the future.
+
+```rust
+let doc: Document = r#"<!DOCTYPE html>
+<html>
+    <head><title>Test</title></head>
+    <body>
+        <div id="main"></div>
+    </body>
+</html>"#.into();
+
+let main_sel = doc.select_single("#main");
+let main_node = main_sel.nodes().first().unwrap();
+
+// create 10 child blocks with links
+let total_links: usize = 10;
+for i in 0..total_links {
+    let content = format!(r#"<div><a href="/{0}">{0} link</a></div>"#, i);
+    main_node.append_html(content);
+}
+let selected_count = doc.select("html body a").nodes().len();
+assert_eq!(selected_count, total_links);
+
+// `find` currently can deal only with paths that start after the current node. 
+// In the following example, `&["html", "body", "div", "a"]` will fail,
+// while `&["a"]` or `&["div", "a"]` are okay.
+let found_count = main_node.find(&["div", "a"]).len();
+assert_eq!(found_count, total_links);
+```
