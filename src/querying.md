@@ -443,3 +443,37 @@ assert_eq!(descendants_id_names, expected_id_names);
 - You can filter the descendants to retrieve only element nodes using an iterator and the `is_element` method.
 
 This method is useful for traversing the DOM tree and accessing nodes that are nested within a specific element.
+
+## Retrieving the base URI
+
+The `base_uri` is a much faster alternative to `doc.select("html > head > base").attr("href")`.
+Currently, it does not cache the result, so each time you call it, it will traverse the tree again.
+The reason it is not cached is to keep `Document` implementing the `Send` trait.
+
+## Example
+
+```rust
+let contents: &str = r#"<!DOCTYPE html>
+<html>
+    <head>
+        <base href="https://www.example.com/"/>
+        <title>Test</title>
+    </head>
+    <body>
+        <div id="main"></div>
+    </body>
+</html>"#;
+
+let doc = Document::from(contents);
+
+// Access the base URI directly from the document
+let base_uri = doc.base_uri().unwrap();
+assert_eq!(base_uri.as_ref(), "https://www.example.com/");
+
+// Access the base URI from any node
+let sel = doc.select_single("#main");
+let node = sel.nodes().first().unwrap();
+let base_uri = node.base_uri().unwrap();
+assert_eq!(base_uri.as_ref(), "https://www.example.com/");
+```
+
