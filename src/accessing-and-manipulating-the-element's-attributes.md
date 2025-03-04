@@ -2,7 +2,6 @@
 
 The `dom_query` crate provides several methods for accessing and manipulating the attributes of an HTML element.
 
-> [!NOTE]
 > All methods listed below apply to both Selection and Node.
 
 ### Getting an attribute value
@@ -22,7 +21,7 @@ let html = r#"<!DOCTYPE html>
 
 let doc = Document::from(html);
 
-let mut input_selection = doc.select("input[name=k]");
+let input_selection = doc.select("input[name=k]");
 
 let val = input_selection.attr("data-k").unwrap();
 assert_eq!(val.to_string(), "100");
@@ -110,3 +109,34 @@ If it called from the `Selection` then it will remove all attributes from all el
 input_selection.remove_all_attrs();
 assert_eq!(input_selection.html(), r#"<input>"#.into());
 ```
+
+### Operating the class attribute
+
+For `Selection`, these methods operate on all elements in the selection:
+
+- `add_class()` adds a class to all elements.
+- `remove_class()` removes a class from all elements.
+- `has_class()` returns true **if at least one element** in the selection has the specified class.
+
+For `Node`, the same methods work in the same way but only affect the current node.
+```rust
+
+// selecting an element.
+let input_selection = doc.select("input");
+
+// adding a class to all elements in the selection.
+input_selection.add_class("new-class");
+
+// checking if at least one element in the selection has a class.
+assert!(input_selection.has_class("new-class"));
+assert!(input_selection.has_class("important"));
+
+// removing a class from all elements in the selection.
+input_selection.remove_class("important");
+
+// checking if at least one element in the selection has a class.
+assert!(input_selection.has_class("new-class"));
+assert!(!input_selection.has_class("important"));
+
+```
+
