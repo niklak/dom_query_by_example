@@ -32,6 +32,40 @@ let val_or = input_selection.attr_or("data-l", "0");
 assert_eq!(val_or.to_string(), "0");
 ```
 
+### Getting the class attribute
+
+You can use the `class()` method to retrieve the value of the `class` attribute.
+If the `class` attribute does not exist, the method returns `None`.
+
+For `Selection`, the class method will return the value of the `class` attribute of the first element in the selection.
+For `Node`, the class method will return the value of the `class` attribute of the current element.
+
+```rust
+use tendril::StrTendril;
+
+let input_selection = doc.select("input");
+let class: Option<StrTendril> = input_selection.class();
+assert_eq!(class, Some("important".into()));
+```
+
+### Getting the id attribute
+
+Everything works the same way as with the `class` attribute,
+but the method for `Selection` is called `id()`, while for `Node`, it is called `id_attr()`.
+
+```rust
+use tendril::StrTendril;
+
+let input_selection = doc.select("input");
+let id_attr: Option<StrTendril> = input_selection.id();
+assert_eq!(id_attr, Some("k".into()));
+
+let input_node = input_selection.first().unwrap();
+let id_attr: Option<StrTendril> = input_node.id_attr();
+assert_eq!(id_attr, Some("k".into()));
+
+```
+
 ### Removing an attribute
 
 You can use the `remove_attr()` method to remove a specific attribute from the element.
