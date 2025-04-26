@@ -224,6 +224,57 @@ assert!(doc.select(r#"body > span:has-text("Tweedledee") + #extra"#).exists());
 
 Additionally, methods like `replace_with_html`, `set_html`, `append_html`, `prepend_html`, `before_html` and `after_html` can specify more than one element in the provided string.
 
+### Wrapping & Unwrapping Node Elements
+
+```rust
+use dom_query::Document;
+
+let doc: Document = r#"<!DOCTYPE html>
+<html lang="en">
+<head></head>
+<body>
+    <div id="main">
+        <p id="content">It's</p>
+    <div>
+</body>
+</html>"#.into();
+
+let content_sel = doc.select("#content");
+let content_node = content_sel.nodes().first().unwrap();
+
+// 1. Wrapping the node with a new element
+let wrapper = doc.tree.new_element("div");
+wrapper.set_attr("id", "wrapper");
+content_node.wrap_node(&wrapper);
+
+assert_eq!(doc.select("#main > #wrapper > #content").length(), 1);
+
+// 2. Wrapping the node with an HTML fragment
+content_node.wrap_html(r#"<div id="sub-wrapper"><div class="adv">adv block content</div></div>"#);
+
+// The node will be attached after `.adv` inside `#sub-wrapper`
+assert_eq!(doc.select("#main > #wrapper > #sub-wrapper > .adv + #content").length(), 1);
+
+// 3. Unwrapping the node
+content_node.unwrap_node();
+
+// Now #content is again a direct child of #wrapper
+assert_eq!(doc.select("#main > #wrapper > #content").length(), 1);
+
+// The detached #sub-wrapper still exists in the tree but is not connected
+assert!(doc.select("#sub-wrapper").exists());
+
+```
+
+
+### Explanation:
+
+- `wrap_node(&wrapper_node)` — wraps the current node inside the given node.
+
+- `wrap_html("<html_fragment>")` — wraps the current node using the first element found in the provided HTML fragment.
+
+- `unwrap_node()` — removes the node’s parent and moves the node up one level in the tree.
+
 ## Text Node Normalization
 Node normalization is essential for merging adjacent text nodes into a single node and removing empty text nodes. This helps keep the document structure compact and organized.
 
@@ -270,3 +321,52 @@ assert_eq!(child.text(), "Child and a tail".into());
 ```
 The `normalize` method follows the [Node.normalize()](https://developer.mozilla.org/en-US/docs/Web/API/Node/normalize) specification.
 This method is also available through the `Document` struct as `Document::normalize()`, which applies normalization to all text nodes within the document tree.
+
+
+## Stripping Elements with `strip_elements`
+`dom_query` allows you to easily remove specific elements from a node, keeping their children preserved.
+
+```rust
+use dom_query::Document;
+
+let doc: Document = r#"<!DOCTYPE html>
+<html lang="en">
+<head></head>
+<body>
+    <div id="main">
+        <p id="content">the quick brown <b>fox</b> jumps over the lazy <i>dog</i></p>
+    <div>
+</body>
+</html>"#.into();
+
+// 1. Select the content node
+let content_sel = doc.select("#content");
+let content_node = content_sel.nodes().first().unwrap();
+
+assert_eq!(
+    content_node.inner_html(),
+    "the quick brown <b>fox</b> jumps over the lazy <i>dog</i>"
+);
+
+// 2. Strip specific elements (`<b>`, `<i>`) while keeping their children
+content_node.strip_elements(&["b", "i"]);
+
+// Now only text nodes remain
+assert_eq!(
+    content_node.inner_html(),
+    "the quick brown fox jumps over the lazy dog"
+);
+assert_ne!(content_node.children_it(false).count(), 1);
+
+// 3. Optional: Normalize to merge adjacent text nodes into a single node
+content_node.normalize();
+assert_eq!(content_node.children_it(false).count(), 1);
+```
+
+### Explanation:
+
+- `strip_elements(["tag1", "tag2", ...])` — removes all matching elements inside the node but preserves their children.
+
+- `normalize()` — merges adjacent text nodes into a single one, for a cleaner structure.
+
+> **Note**: `strip_elements` only removes the specified tags themselves, preserving their content inside.
